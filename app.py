@@ -1,16 +1,13 @@
 import streamlit as st
 import requests
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
-
-API_KEY = os.getenv("GEMINI_API_KEY")
+# Get API key from Streamlit Secrets (NOT dotenv)
+API_KEY = st.secrets["GEMINI_API_KEY"]
 
 st.set_page_config(page_title="AI Study Assistant", page_icon="🤖")
 
 st.title("🤖 AI Smart Study Assistant")
-st.write("Enter a topic and get AI-generated study notes")
 
 topic = st.text_input("Enter Topic")
 
@@ -22,15 +19,11 @@ if st.button("Generate"):
 
             url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={API_KEY}"
 
-            headers = {
-                "Content-Type": "application/json"
-            }
-
             data = {
                 "contents": [{
                     "parts": [{
                         "text": f"""
-                        Act as a teacher. Create detailed study material on {topic}.
+                        Act as a teacher and create study notes on {topic}.
 
                         Include:
                         1. Explanation
@@ -44,15 +37,14 @@ if st.button("Generate"):
                 }]
             }
 
-            response = requests.post(url, headers=headers, json=data)
-
+            response = requests.post(url, json=data)
             result = response.json()
 
             try:
-                output = result['candidates'][0]['content']['parts'][0]['text']
+                output = result["candidates"][0]["content"]["parts"][0]["text"]
                 st.markdown(output)
             except:
-                st.error("Error generating response. Check API key or model access.")
+                st.error("Failed to generate response. Check API key.")
 
     else:
         st.warning("Please enter a topic.")
