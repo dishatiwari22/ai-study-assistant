@@ -1,56 +1,58 @@
 import streamlit as st
-import google.generativeai as genai
-from dotenv import load_dotenv
+import requests
 import os
+from dotenv import load_dotenv
 
-# Load API key from environment (.env locally / Secrets in cloud)
 load_dotenv()
 
-api_key = os.getenv("GEMINI_API_KEY")
+API_KEY = os.getenv("GEMINI_API_KEY")
 
-# Configure Gemini
-genai.configure(api_key=api_key)
-
-# Use stable model
-model = genai.GenerativeModel("gemini-2.5-flash")
-
-# Page setup
-st.set_page_config(
-    page_title="AI Smart Study Assistant",
-    page_icon="🤖"
-)
+st.set_page_config(page_title="AI Study Assistant", page_icon="🤖")
 
 st.title("🤖 AI Smart Study Assistant")
-st.write("Enter any topic and get structured study material instantly.")
+st.write("Enter a topic and get AI-generated study notes")
 
-# Input
-topic = st.text_input("Enter a Topic")
+topic = st.text_input("Enter Topic")
 
-# Button
 if st.button("Generate"):
+
     if topic:
 
-        with st.spinner("Generating study material..."):
+        with st.spinner("Generating..."):
 
-            prompt = f"""
-            Act as a professional teacher.
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={API_KEY}"
 
-            Create structured study notes on: {topic}
+            headers = {
+                "Content-Type": "application/json"
+            }
 
-            Include:
-            1. Explanation
-            2. Short Notes
-            3. Key Points
-            4. 5 MCQs with answers
-            5. 3 Interview Questions
-            6. Summary
+            data = {
+                "contents": [{
+                    "parts": [{
+                        "text": f"""
+                        Act as a teacher. Create detailed study material on {topic}.
 
-            Make it clear, simple and exam-ready.
-            """
+                        Include:
+                        1. Explanation
+                        2. Short Notes
+                        3. Key Points
+                        4. 5 MCQs with answers
+                        5. 3 Interview Questions
+                        6. Summary
+                        """
+                    }]
+                }]
+            }
 
-            response = model.generate_content(prompt)
+            response = requests.post(url, headers=headers, json=data)
 
-            st.markdown(response.text)
+            result = response.json()
+
+            try:
+                output = result['candidates'][0]['content']['parts'][0]['text']
+                st.markdown(output)
+            except:
+                st.error("Error generating response. Check API key or model access.")
 
     else:
         st.warning("Please enter a topic.")
