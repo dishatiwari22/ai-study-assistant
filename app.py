@@ -1,24 +1,27 @@
 import streamlit as st
-from google import genai
+import google.generativeai as genai
 from dotenv import load_dotenv
 import os
 
-# Load API key from .env
+# Load API key from environment (.env locally / Secrets in cloud)
 load_dotenv()
 
 api_key = os.getenv("GEMINI_API_KEY")
 
-# Create Gemini client (NEW SDK)
-client = genai.Client(api_key=api_key)
+# Configure Gemini
+genai.configure(api_key=api_key)
 
-# Page config
+# Use stable model
+model = genai.GenerativeModel("gemini-2.5-flash")
+
+# Page setup
 st.set_page_config(
     page_title="AI Smart Study Assistant",
     page_icon="🤖"
 )
 
 st.title("🤖 AI Smart Study Assistant")
-st.write("Enter any study topic and let AI generate study material.")
+st.write("Enter any topic and get structured study material instantly.")
 
 # Input
 topic = st.text_input("Enter a Topic")
@@ -27,25 +30,25 @@ topic = st.text_input("Enter a Topic")
 if st.button("Generate"):
     if topic:
 
-        with st.spinner("Generating..."):
+        with st.spinner("Generating study material..."):
 
             prompt = f"""
-            Give detailed study material on {topic}.
+            Act as a professional teacher.
+
+            Create structured study notes on: {topic}
 
             Include:
             1. Explanation
             2. Short Notes
             3. Key Points
-            4. Five MCQs with answers
-            5. Three Interview Questions
+            4. 5 MCQs with answers
+            5. 3 Interview Questions
             6. Summary
+
+            Make it clear, simple and exam-ready.
             """
 
-            # Gemini API call (CORRECT MODEL)
-            response = client.models.generate_content(
-                model="models/gemini-2.5-flash",
-                contents=prompt
-            )
+            response = model.generate_content(prompt)
 
             st.markdown(response.text)
 
