@@ -3,15 +3,15 @@ import requests
 
 API_KEY = st.secrets["GEMINI_API_KEY"]
 
-st.set_page_config(page_title="AI Study Assistant", page_icon="🤖", layout="centered")
+st.set_page_config(page_title="AI Study Chat Assistant", page_icon="🤖", layout="centered")
 
-# ================= UI HEADER =================
-st.title("🤖 AI Smart Study Assistant")
-st.markdown("### Your personal AI tutor for instant learning 📚")
+# ================= HEADER =================
+st.title("🤖 AI Smart Study Chat Assistant")
+st.markdown("Chat with your AI tutor like ChatGPT 📚")
 st.divider()
 
 # ================= SIDEBAR =================
-st.sidebar.title("⚙️ Study Settings")
+st.sidebar.title("⚙️ Settings")
 
 mode = st.sidebar.selectbox(
     "Choose Mode",
@@ -20,82 +20,71 @@ mode = st.sidebar.selectbox(
 
 exam_mode = st.sidebar.checkbox("🎯 Exam Mode")
 
-st.sidebar.markdown("---")
-st.sidebar.subheader("📌 History")
+# ================= SESSION STATE =================
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-if "history" not in st.session_state:
-    st.session_state.history = []
+# show chat history
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
-# ================= INPUT =================
-topic = st.text_input("Enter a Topic")
+# ================= USER INPUT =================
+user_input = st.chat_input("Ask anything (e.g. Explain photosynthesis)")
 
-# ================= GENERATE =================
-if st.button("🚀 Generate"):
+if user_input:
 
-    if topic:
+    # store user message
+    st.session_state.messages.append({"role": "user", "content": user_input})
 
-        st.session_state.history.append(topic)
+    with st.chat_message("user"):
+        st.markdown(user_input)
 
-        with st.spinner("Generating your AI study material... 🤖"):
+    # ================= BUILD PROMPT =================
+    prompt = f"""
+You are an expert AI teacher.
 
-            prompt = f"""
-You are an expert teacher and exam coach.
-
-Topic: {topic}
 Mode: {mode}
 
+Student question: {user_input}
+
 Generate:
+- Simple explanation
+- Key points
+- Examples
+- If needed MCQs or summary
 
-1. Simple explanation (easy language)
-2. Short exam notes
-3. Key points
-4. Real-life examples
-5. 5 MCQs with answers
-6. 3 interview questions
-7. Quick revision summary
-
-Make it structured, clear, and student-friendly.
+Make it easy to understand.
 """
 
-            if exam_mode:
-                prompt += "\nFocus only on high probability exam questions and short answers."
+    if exam_mode:
+        prompt += "\nFocus on exam-relevant short answers and important questions."
 
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={API_KEY}"
+    # ================= API CALL =================
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={API_KEY}"
 
-            data = {
-                "contents": [{
-                    "parts": [{"text": prompt}]
-                }]
-            }
+    data = {
+        "contents": [{
+            "parts": [{"text": prompt}]
+        }]
+    }
 
+    with st.chat_message("assistant"):
+        with st.spinner("Thinking... 🤖"):
             response = requests.post(url, json=data)
             result = response.json()
 
             try:
                 output = result["candidates"][0]["content"]["parts"][0]["text"]
 
-                st.success("Generated Successfully 🎉")
-
-                # ================= OUTPUT =================
-                st.markdown("## 📘 Your Study Material")
                 st.markdown(output)
 
-                # ================= DOWNLOAD BUTTON =================
-                st.download_button(
-                    label="📥 Download Notes",
-                    data=output,
-                    file_name=f"{topic}_study_notes.txt",
-                    mime="text/plain"
-                )
+                # save assistant response
+                st.session_state.messages.append({
+                    "role": "assistant",
+                    "content": output
+                })
 
             except:
-                st.error("Something went wrong. Please check API key or model.")
-
-    else:
-        st.warning("⚠️ Please enter a topic!")
-
-# ================= HISTORY UI =================
-if st.session_state.history:
-    st.sidebar.write("Recent Topics:")
-    for item in reversed(st.session_state.history[-5:]):
-        st.sidebar.write("•", item)
+                error_msg = "Sorry, I couldn't generate a response. Check API key or model."
+                st.error(error_msg)
