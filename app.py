@@ -8,6 +8,7 @@ st.set_page_config(
     page_icon="🤖",
     layout="wide"
 )
+
 st.markdown("""
 <style>
 
@@ -31,36 +32,14 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-
-
-.main-title{
-    font-size:42px;
-    font-weight:bold;
-    text-align:center;
-    color:white;
-    padding:18px;
-    border-radius:15px;
-    background: linear-gradient(90deg,#6C63FF,#8E2DE2,#FF4B91);
-}
-
-.subtitle{
-    text-align:center;
-    opacity:0.8;
-    font-size:18px;
-    margin-top:10px;
-}
-
-</style>
-""", unsafe_allow_html=True)
-
 st.markdown(
-'<div class="main-title">🤖 AI Smart Study Assistant</div>',
-unsafe_allow_html=True
+    '<div class="main-title">🤖 AI Smart Study Assistant</div>',
+    unsafe_allow_html=True
 )
 
 st.markdown(
-'<div class="subtitle">Your Personal AI Tutor powered by Gemini AI</div>',
-unsafe_allow_html=True
+    '<div class="subtitle">Your Personal AI Tutor powered by Gemini AI</div>',
+    unsafe_allow_html=True
 )
 
 st.divider()
