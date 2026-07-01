@@ -11,9 +11,8 @@ st.set_page_config(
 st.markdown("""
 <style>
 
-.stApp{
-    background: linear-gradient(to right,#f8fbff,#eef4ff);
-}
+st.markdown("""
+<style>
 
 .main-title{
     font-size:42px;
@@ -27,7 +26,27 @@ st.markdown("""
 
 .subtitle{
     text-align:center;
-    color:#555;
+    font-size:18px;
+    margin-top:10px;
+    opacity:0.8;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+.main-title{
+    font-size:42px;
+    font-weight:bold;
+    text-align:center;
+    color:white;
+    padding:18px;
+    border-radius:15px;
+    background: linear-gradient(90deg,#6C63FF,#8E2DE2,#FF4B91);
+}
+
+.subtitle{
+    text-align:center;
+    opacity:0.8;
     font-size:18px;
     margin-top:10px;
 }
