@@ -11,9 +11,6 @@ st.set_page_config(
 st.markdown("""
 <style>
 
-st.markdown("""
-<style>
-
 .main-title{
     font-size:42px;
     font-weight:bold;
@@ -33,6 +30,8 @@ st.markdown("""
 
 </style>
 """, unsafe_allow_html=True)
+
+
 
 .main-title{
     font-size:42px;
