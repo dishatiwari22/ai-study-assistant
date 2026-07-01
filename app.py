@@ -1,90 +1,242 @@
 import streamlit as st
 import requests
+import io
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+
+
+st.set_page_config(
+    page_title="AI Smart Study Assistant",
+    page_icon="🤖",
+    layout="wide"
+)
 
 API_KEY = st.secrets["GEMINI_API_KEY"]
 
-st.set_page_config(page_title="AI Study Chat Assistant", page_icon="🤖", layout="centered")
 
-# ================= HEADER =================
-st.title("🤖 AI Smart Study Chat Assistant")
-st.markdown("Chat with your AI tutor like ChatGPT 📚")
-st.divider()
+def create_pdf(messages):
+    buffer = io.BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=letter)
 
-# ================= SIDEBAR =================
-st.sidebar.title("⚙️ Settings")
+    width, height = letter
+    y = height - 40
+
+    pdf.setFont("Helvetica-Bold", 18)
+    pdf.drawString(50, y, "AI Smart Study Assistant")
+    y -= 30
+
+    pdf.setFont("Helvetica", 11)
+
+    for msg in messages:
+        role = msg["role"].capitalize()
+
+        lines = msg["content"].split("\n")
+
+        pdf.setFont("Helvetica-Bold", 12)
+        pdf.drawString(50, y, role)
+        y -= 18
+
+        pdf.setFont("Helvetica", 11)
+
+        for line in lines:
+
+            if y < 50:
+                pdf.showPage()
+                y = height - 40
+
+            pdf.drawString(60, y, line[:100])
+            y -= 15
+
+        y -= 10
+
+    pdf.save()
+    buffer.seek(0)
+    return buffer
+
+# ---------------- HEADER ----------------
+st.title("🤖 AI Smart Study Assistant")
+
+st.markdown(
+    """
+Ask any study question and receive AI-generated explanations,
+notes, examples, MCQs, interview questions and summaries.
+"""
+)
+
+# ---------------- SIDEBAR ----------------
+st.sidebar.title("⚙️ Study Settings")
 
 mode = st.sidebar.selectbox(
-    "Choose Mode",
-    ["Study Notes", "MCQs Only", "Quick Revision"]
+    "Learning Mode",
+    [
+        "Study Notes",
+        "Quick Revision",
+        "MCQs Only"
+    ]
 )
 
 exam_mode = st.sidebar.checkbox("🎯 Exam Mode")
 
-# ================= SESSION STATE =================
+st.sidebar.divider()
+
+st.sidebar.subheader("💡 Suggested Topics")
+
+topics = [
+    "Python",
+    "Machine Learning",
+    "Artificial Intelligence",
+    "Operating System",
+    "DBMS",
+    "Computer Networks",
+    "Data Structures",
+    "Java"
+]
+
+for t in topics:
+    st.sidebar.write("•", t)
+
+st.sidebar.divider()
+
+# ---------------- SESSION ----------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# show chat history
+# ---------------- SHOW CHAT ----------------
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-# ================= USER INPUT =================
-user_input = st.chat_input("Ask anything (e.g. Explain photosynthesis)")
+# ---------------- USER INPUT ----------------
+question = st.chat_input("Ask your study question...")
 
-if user_input:
+if question:
 
-    # store user message
-    st.session_state.messages.append({"role": "user", "content": user_input})
+    st.session_state.messages.append(
+        {
+            "role":"user",
+            "content":question
+        }
+    )
 
     with st.chat_message("user"):
-        st.markdown(user_input)
+        st.markdown(question)
 
-    # ================= BUILD PROMPT =================
     prompt = f"""
-You are an expert AI teacher.
+You are an expert teacher.
 
-Mode: {mode}
+Learning Mode:
+{mode}
 
-Student question: {user_input}
+Student Question:
+{question}
 
 Generate:
-- Simple explanation
-- Key points
-- Examples
-- If needed MCQs or summary
 
-Make it easy to understand.
+1. Easy Explanation
+
+2. Important Concepts
+
+3. Key Points
+
+4. Real-life Examples
+
+5. 5 MCQs with Answers
+
+6. 3 Interview Questions
+
+7. Quick Revision Summary
+
+Write in simple English.
+
+Use headings and bullet points.
 """
 
     if exam_mode:
-        prompt += "\nFocus on exam-relevant short answers and important questions."
+        prompt += """
 
-    # ================= API CALL =================
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={API_KEY}"
+Focus on:
+- High probability exam questions
+- Important definitions
+- Short answers
+"""
 
-    data = {
-        "contents": [{
-            "parts": [{"text": prompt}]
-        }]
+    url = (
+        "https://generativelanguage.googleapis.com/v1beta/models/"
+        f"gemini-2.5-flash:generateContent?key={API_KEY}"
+    )
+
+    body = {
+        "contents":[
+            {
+                "parts":[
+                    {
+                        "text":prompt
+                    }
+                ]
+            }
+        ]
     }
 
     with st.chat_message("assistant"):
-        with st.spinner("Thinking... 🤖"):
-            response = requests.post(url, json=data)
-            result = response.json()
+
+        with st.spinner("Generating..."):
+
+            response = requests.post(url, json=body)
+
+            data = response.json()
 
             try:
-                output = result["candidates"][0]["content"]["parts"][0]["text"]
 
-                st.markdown(output)
+                answer = data["candidates"][0]["content"]["parts"][0]["text"]
 
-                # save assistant response
-                st.session_state.messages.append({
-                    "role": "assistant",
-                    "content": output
-                })
+                st.markdown(answer)
+
+                st.session_state.messages.append(
+                    {
+                        "role":"assistant",
+                        "content":answer
+                    }
+                )
 
             except:
-                error_msg = "Sorry, I couldn't generate a response. Check API key or model."
-                st.error(error_msg)
+
+                st.error("Unable to generate response.")
+
+# ---------------- SIDEBAR TOOLS ----------------
+st.sidebar.divider()
+
+st.sidebar.subheader("📄 Export Chat")
+
+if st.session_state.messages:
+
+    pdf = create_pdf(st.session_state.messages)
+
+    st.sidebar.download_button(
+        "⬇ Download PDF",
+        pdf,
+        file_name="Study_Chat.pdf",
+        mime="application/pdf"
+    )
+
+st.sidebar.divider()
+
+st.sidebar.subheader("📊 Chat Statistics")
+
+user_questions = len(
+    [m for m in st.session_state.messages if m["role"]=="user"]
+)
+
+assistant_answers = len(
+    [m for m in st.session_state.messages if m["role"]=="assistant"]
+)
+
+st.sidebar.write(f"Questions : {user_questions}")
+st.sidebar.write(f"Responses : {assistant_answers}")
+
+st.sidebar.divider()
+
+if st.sidebar.button("🗑 Clear Chat"):
+
+    st.session_state.messages=[]
+
+    st.rerun()
