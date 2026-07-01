@@ -96,6 +96,9 @@ for topic in topics:
 
 st.sidebar.divider()
 
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
 if len(st.session_state.messages) == 0:
 
     st.info("""
