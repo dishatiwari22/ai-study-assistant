@@ -305,18 +305,20 @@ if st.session_state.messages:
     for msg in st.session_state.messages:
         chat += f"{msg['role'].upper()}\n{msg['content']}\n\n"
 
-   st.sidebar.download_button(
-    "📥 Download Chat",
-    chat,
-    file_name="Study_Chat.txt",
-    mime="text/plain"
-)
+    st.sidebar.download_button(
+        "📥 Download Chat",
+        chat,
+        file_name="Study_Chat.txt",
+        mime="text/plain"
+    )
+
 st.sidebar.divider()
 
-if st.sidebar.button("Clear Chat"):
+if st.sidebar.button("🗑️ Clear Chat"):
     st.session_state.messages = []
     st.rerun()
-    st.divider()
+
+st.divider()
 
 st.markdown(
 """
@@ -328,7 +330,3 @@ Made with ❤️ by Disha using Streamlit & Gemini AI
 """,
 unsafe_allow_html=True
 )
-
-# NOTE:
-# This is the uploaded version of your app saved as a clean downloadable file.
-# We can continue upgrading it feature-by-feature from this stable version.
