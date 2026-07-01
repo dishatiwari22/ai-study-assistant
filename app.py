@@ -121,7 +121,9 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-question = st.chat_input("Ask your study question...")
+question = st.chat_input(
+    "💬 Ask anything... Example: Explain Machine Learning in simple words"
+)
 
 if question:
 
@@ -256,7 +258,7 @@ Also focus on:
 
     with st.chat_message("assistant"):
 
-        with st.spinner("Thinking..."):
+      with st.spinner("🧠 AI is preparing your study material..."):
 
             response = requests.post(url, json=body)
 
@@ -289,9 +291,11 @@ answers = len(
     [m for m in st.session_state.messages if m["role"] == "assistant"]
 )
 
-st.sidebar.metric("Questions Asked", questions)
-st.sidebar.metric("Responses Generated", answers)
+st.sidebar.markdown("## 📊 Dashboard")
 
+st.sidebar.metric("📖 Questions Asked", questions)
+
+st.sidebar.metric("🤖 Responses Generated", answers)
 st.sidebar.divider()
 
 if st.session_state.messages:
@@ -302,7 +306,7 @@ if st.session_state.messages:
         chat += f"{msg['role'].upper()}\n{msg['content']}\n\n"
 
     st.sidebar.download_button(
-        "Download Chat",
+        "📥 Download Chat"
         chat,
         file_name="Study_Chat.txt",
         mime="text/plain"
@@ -313,6 +317,18 @@ st.sidebar.divider()
 if st.sidebar.button("Clear Chat"):
     st.session_state.messages = []
     st.rerun()
+    st.divider()
+
+st.markdown(
+"""
+<div style='text-align:center; color:gray; font-size:16px;'>
+
+Made with ❤️ by Disha using Streamlit & Gemini AI
+
+</div>
+""",
+unsafe_allow_html=True
+)
 
 # NOTE:
 # This is the uploaded version of your app saved as a clean downloadable file.
