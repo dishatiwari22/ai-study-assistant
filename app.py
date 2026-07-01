@@ -254,7 +254,7 @@ st.sidebar.divider()
 
 if st.sidebar.button("Clear Chat"):
     st.session_state.messages = []
-    st.rerun()ile "/mount/sr
+    st.rerun()
 
 # NOTE:
 # This is the uploaded version of your app saved as a clean downloadable file.
