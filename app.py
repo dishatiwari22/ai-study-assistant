@@ -8,12 +8,52 @@ st.set_page_config(
     page_icon="🤖",
     layout="wide"
 )
+st.markdown("""
+<style>
 
-st.title("🤖 AI Smart Study Assistant")
-st.markdown("Your personal AI tutor for study notes, revision, quizzes and interview preparation.")
+.stApp{
+    background: linear-gradient(to right,#f8fbff,#eef4ff);
+}
+
+.main-title{
+    font-size:42px;
+    font-weight:bold;
+    text-align:center;
+    color:white;
+    padding:18px;
+    border-radius:15px;
+    background: linear-gradient(90deg,#6C63FF,#8E2DE2,#FF4B91);
+}
+
+.subtitle{
+    text-align:center;
+    color:#555;
+    font-size:18px;
+    margin-top:10px;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown(
+'<div class="main-title">🤖 AI Smart Study Assistant</div>',
+unsafe_allow_html=True
+)
+
+st.markdown(
+'<div class="subtitle">Your Personal AI Tutor powered by Gemini AI</div>',
+unsafe_allow_html=True
+)
+
 st.divider()
 
-st.sidebar.title("⚙️ Study Settings")
+st.sidebar.markdown("""
+# 📚 AI Study Assistant
+
+Welcome!
+
+Customize your learning experience.
+""")
 
 mode = st.sidebar.selectbox(
     "Learning Mode",
@@ -58,6 +98,23 @@ st.sidebar.divider()
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
+    if len(st.session_state.messages) == 0:
+
+    st.info("""
+### 👋 Welcome!
+
+Try asking:
+
+• 🤖 Explain Artificial Intelligence
+
+• 🐍 Teach me Python Basics
+
+• 📚 Revise DBMS
+
+• 🧠 Create a Quiz on Machine Learning
+
+Happy Learning! 🚀
+""")
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
