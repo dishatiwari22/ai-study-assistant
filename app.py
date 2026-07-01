@@ -305,13 +305,12 @@ if st.session_state.messages:
     for msg in st.session_state.messages:
         chat += f"{msg['role'].upper()}\n{msg['content']}\n\n"
 
-    st.sidebar.download_button(
-        "📥 Download Chat"
-        chat,
-        file_name="Study_Chat.txt",
-        mime="text/plain"
-    )
-
+   st.sidebar.download_button(
+    "📥 Download Chat",
+    chat,
+    file_name="Study_Chat.txt",
+    mime="text/plain"
+)
 st.sidebar.divider()
 
 if st.sidebar.button("Clear Chat"):
